@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Calendar, MapPin, Users, Clock, CheckCircle, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { deleteCamp } from "@/services/campService";
 
 interface CampCardProps {
   camp: {
@@ -48,6 +49,15 @@ const CampCard: React.FC<CampCardProps> = ({ camp }) => {
 
   const progressPercentage = (camp.registeredPatients / camp.capacity) * 100;
 
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteCamp(id);
+      alert("Camp deleted successfully!");
+      
+    } catch (error) {
+      alert("Error deleting camp: " + error.message);
+    }
+  };
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
       <div className="p-5">
@@ -134,12 +144,9 @@ const CampCard: React.FC<CampCardProps> = ({ camp }) => {
             />
           </Button>
           <div className="flex space-x-2">
-            <Button size="sm" variant="outline">
-              Details
-            </Button>
-            <Button size="sm">
-              {camp.status === 'Active' ? 'Register Patient' : 'View'}
-            </Button>
+          <Button size="sm" variant="destructive" onClick={() => handleDelete(camp.id)}>
+            Delete Camp
+          </Button>
           </div>
         </div>
       </div>
