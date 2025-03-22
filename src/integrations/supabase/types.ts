@@ -9,7 +9,209 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      assessments: {
+        Row: {
+          blood_pressure: string | null
+          bmi: number | null
+          created_at: string
+          diagnosis: string | null
+          glucose_level: number | null
+          heart_rate: number | null
+          height: number | null
+          id: string
+          notes: string | null
+          oxygen_level: number | null
+          prescription: string | null
+          temperature: number | null
+          updated_at: string
+          visit_id: string
+          weight: number | null
+        }
+        Insert: {
+          blood_pressure?: string | null
+          bmi?: number | null
+          created_at?: string
+          diagnosis?: string | null
+          glucose_level?: number | null
+          heart_rate?: number | null
+          height?: number | null
+          id?: string
+          notes?: string | null
+          oxygen_level?: number | null
+          prescription?: string | null
+          temperature?: number | null
+          updated_at?: string
+          visit_id: string
+          weight?: number | null
+        }
+        Update: {
+          blood_pressure?: string | null
+          bmi?: number | null
+          created_at?: string
+          diagnosis?: string | null
+          glucose_level?: number | null
+          heart_rate?: number | null
+          height?: number | null
+          id?: string
+          notes?: string | null
+          oxygen_level?: number | null
+          prescription?: string | null
+          temperature?: number | null
+          updated_at?: string
+          visit_id?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessments_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "camp_visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      camp_visits: {
+        Row: {
+          camp_id: string
+          created_at: string
+          follow_up_date: string | null
+          follow_up_required: boolean | null
+          id: string
+          notes: string | null
+          patient_id: string
+          updated_at: string
+          visit_date: string
+        }
+        Insert: {
+          camp_id: string
+          created_at?: string
+          follow_up_date?: string | null
+          follow_up_required?: boolean | null
+          id?: string
+          notes?: string | null
+          patient_id: string
+          updated_at?: string
+          visit_date?: string
+        }
+        Update: {
+          camp_id?: string
+          created_at?: string
+          follow_up_date?: string | null
+          follow_up_required?: boolean | null
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          updated_at?: string
+          visit_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "camp_visits_camp_id_fkey"
+            columns: ["camp_id"]
+            isOneToOne: false
+            referencedRelation: "camps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "camp_visits_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      camps: {
+        Row: {
+          capacity: number
+          contact: string | null
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          location: string
+          name: string
+          organizer: string | null
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number
+          contact?: string | null
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          location: string
+          name: string
+          organizer?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          contact?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          location?: string
+          name?: string
+          organizer?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      patients: {
+        Row: {
+          address: string | null
+          age: number
+          created_at: string
+          gender: string
+          has_alert: boolean | null
+          id: string
+          medical_history: string[] | null
+          name: string
+          patient_id: string
+          phone: string | null
+          registration_date: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          age: number
+          created_at?: string
+          gender: string
+          has_alert?: boolean | null
+          id?: string
+          medical_history?: string[] | null
+          name: string
+          patient_id: string
+          phone?: string | null
+          registration_date?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          age?: number
+          created_at?: string
+          gender?: string
+          has_alert?: boolean | null
+          id?: string
+          medical_history?: string[] | null
+          name?: string
+          patient_id?: string
+          phone?: string | null
+          registration_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
