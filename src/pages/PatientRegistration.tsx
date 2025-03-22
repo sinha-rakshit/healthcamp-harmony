@@ -335,72 +335,96 @@ const PatientRegistration = () => {
                     </Button>
                   </div>
                 </div>
-              </Tabs>
-            </div>
-            
-            {/* Filters Panel */}
-            {showFilters && (
-              <div className="p-6 border-b border-gray-100 bg-gray-50">
-                <div className="flex flex-wrap gap-4">
-                  <div>
-                    <h3 className="text-sm font-medium mb-3">Gender</h3>
-                    <div className="flex gap-2">
-                      <Badge
-                        variant={selectedGenders.includes('Male') ? 'default' : 'outline'}
-                        className="cursor-pointer"
-                        onClick={() => toggleGenderFilter('Male')}
-                      >
-                        Male
-                      </Badge>
-                      <Badge
-                        variant={selectedGenders.includes('Female') ? 'default' : 'outline'}
-                        className="cursor-pointer"
-                        onClick={() => toggleGenderFilter('Female')}
-                      >
-                        Female
-                      </Badge>
+                
+                {/* Filters Panel */}
+                {showFilters && (
+                  <div className="p-6 border-b border-gray-100 bg-gray-50 mt-4">
+                    <div className="flex flex-wrap gap-4">
+                      <div>
+                        <h3 className="text-sm font-medium mb-3">Gender</h3>
+                        <div className="flex gap-2">
+                          <Badge
+                            variant={selectedGenders.includes('Male') ? 'default' : 'outline'}
+                            className="cursor-pointer"
+                            onClick={() => toggleGenderFilter('Male')}
+                          >
+                            Male
+                          </Badge>
+                          <Badge
+                            variant={selectedGenders.includes('Female') ? 'default' : 'outline'}
+                            className="cursor-pointer"
+                            onClick={() => toggleGenderFilter('Female')}
+                          >
+                            Female
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="ml-auto">
+                        <Button variant="ghost" onClick={clearFilters} size="sm">
+                          Clear Filters
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                  <div className="ml-auto">
-                    <Button variant="ghost" onClick={clearFilters} size="sm">
-                      Clear Filters
-                    </Button>
+                )}
+                
+                {/* Patient List - Fixed: Moved TabsContent inside the Tabs component */}
+                <TabsContent value="all">
+                  {isLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                      {[...Array(6)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="bg-gray-100 h-40 rounded-xl animate-pulse"
+                        ></div>
+                      ))}
+                    </div>
+                  ) : filteredPatients.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                      {filteredPatients.map((patient) => (
+                        <PatientCard key={patient.id} patient={patient} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-16 bg-white rounded-xl">
+                      <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <User className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-medium">No patients found</h3>
+                      <p className="text-gray-500 mt-2 mb-6">
+                        Try adjusting your search or filter criteria
+                      </p>
+                      <Button onClick={clearFilters}>Clear Filters</Button>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="recent">
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {filteredPatients
+                        .filter(p => p.lastVisit.includes('Oct'))
+                        .map((patient) => (
+                          <PatientCard key={patient.id} patient={patient} />
+                        ))}
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
+                </TabsContent>
+                
+                <TabsContent value="alerts">
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {filteredPatients
+                        .filter(p => p.hasAlert)
+                        .map((patient) => (
+                          <PatientCard key={patient.id} patient={patient} />
+                        ))}
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
           </div>
-
-          {/* Patient List */}
-          <TabsContent value="all" className="m-0">
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="bg-gray-100 h-40 rounded-xl animate-pulse"
-                  ></div>
-                ))}
-              </div>
-            ) : filteredPatients.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredPatients.map((patient) => (
-                  <PatientCard key={patient.id} patient={patient} />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
-                <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <User className="h-8 w-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-medium">No patients found</h3>
-                <p className="text-gray-500 mt-2 mb-6">
-                  Try adjusting your search or filter criteria
-                </p>
-                <Button onClick={clearFilters}>Clear Filters</Button>
-              </div>
-            )}
-          </TabsContent>
 
           {/* Patient Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
