@@ -1,8 +1,8 @@
-
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import PatientCard from '@/components/PatientCard';
+import { PatientRegistrationForm } from '@/components/PatientRegistrationForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,151 +14,53 @@ import {
   User,
   FileText,
   Calendar,
-  BarChart3,
-  Clock,
-  ChevronRight,
-  CheckCircle,
-  X,
   AlertCircle,
+  ChevronRight,
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
-// Mock data for patients
-const mockPatients = [
-  {
-    id: 'P001',
-    name: 'John Smith',
-    age: 45,
-    gender: 'Male',
-    phone: '+1 (555) 123-4567',
-    lastVisit: 'Oct 10, 2023',
-    address: '123 Oak St, New York, NY 10001',
-    medicalHistory: ['Hypertension', 'Type 2 Diabetes'],
-    campVisits: 3,
-    registrationDate: 'Jan 15, 2023',
-    hasAlert: true,
-  },
-  {
-    id: 'P002',
-    name: 'Emily Johnson',
-    age: 34,
-    gender: 'Female',
-    phone: '+1 (555) 987-6543',
-    lastVisit: 'Oct 12, 2023',
-    address: '456 Maple Ave, San Francisco, CA 94107',
-    medicalHistory: ['Asthma', 'Allergies'],
-    campVisits: 2,
-    registrationDate: 'Feb 20, 2023',
-  },
-  {
-    id: 'P003',
-    name: 'Michael Chen',
-    age: 56,
-    gender: 'Male',
-    phone: '+1 (555) 456-7890',
-    lastVisit: 'Oct 8, 2023',
-    address: '789 Pine Rd, Boston, MA 02108',
-    medicalHistory: ['High Cholesterol', 'Arthritis'],
-    campVisits: 4,
-    registrationDate: 'Dec 5, 2022',
-  },
-  {
-    id: 'P004',
-    name: 'Sarah Williams',
-    age: 29,
-    gender: 'Female',
-    phone: '+1 (555) 234-5678',
-    lastVisit: 'Oct 5, 2023',
-    address: '321 Elm St, Chicago, IL 60601',
-    medicalHistory: ['Migraines'],
-    campVisits: 1,
-    registrationDate: 'Mar 15, 2023',
-  },
-  {
-    id: 'P005',
-    name: 'Robert Garcia',
-    age: 62,
-    gender: 'Male',
-    phone: '+1 (555) 876-5432',
-    lastVisit: 'Sep 28, 2023',
-    address: '654 Birch Dr, Houston, TX 77001',
-    medicalHistory: ['Hypertension', 'COPD', 'Heart Disease'],
-    campVisits: 6,
-    registrationDate: 'Nov 10, 2022',
-    hasAlert: true,
-  },
-  {
-    id: 'P006',
-    name: 'Jennifer Lee',
-    age: 41,
-    gender: 'Female',
-    phone: '+1 (555) 345-6789',
-    lastVisit: 'Oct 1, 2023',
-    address: '987 Cedar Ln, Seattle, WA 98101',
-    medicalHistory: ['Hypothyroidism'],
-    campVisits: 2,
-    registrationDate: 'Feb 5, 2023',
-  },
-  {
-    id: 'P007',
-    name: 'David Wilson',
-    age: 38,
-    gender: 'Male',
-    phone: '+1 (555) 567-8901',
-    lastVisit: 'Sep 20, 2023',
-    address: '246 Spruce Ct, Miami, FL 33101',
-    medicalHistory: ['Anxiety', 'Depression'],
-    campVisits: 3,
-    registrationDate: 'Jan 20, 2023',
-  },
-  {
-    id: 'P008',
-    name: 'Lisa Rodriguez',
-    age: 50,
-    gender: 'Female',
-    phone: '+1 (555) 678-9012',
-    lastVisit: 'Oct 3, 2023',
-    address: '753 Redwood Ave, Los Angeles, CA 90001',
-    medicalHistory: ['Breast Cancer Survivor', 'Osteoporosis'],
-    campVisits: 5,
-    registrationDate: 'Dec 15, 2022',
-  },
-  {
-    id: 'P009',
-    name: 'James Taylor',
-    age: 27,
-    gender: 'Male',
-    phone: '+1 (555) 789-0123',
-    lastVisit: 'Sep 15, 2023',
-    address: '159 Willow Pl, Denver, CO 80201',
-    medicalHistory: ['Seasonal Allergies'],
-    campVisits: 1,
-    registrationDate: 'Apr 10, 2023',
-  },
-];
+import { getPatients, Patient } from '@/services/patientService';
 
 const PatientRegistration = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredPatients, setFilteredPatients] = useState(mockPatients);
+  const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
   const [selectedGenders, setSelectedGenders] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const fetchPatients = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getPatients();
+      setPatients(data);
+      setFilteredPatients(data);
+    } catch (error) {
+      console.error("Error fetching patients:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Simulate data loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-
+    fetchPatients();
+    
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
-
-    return () => clearTimeout(timer);
   }, []);
 
   // Filter patients based on search query, selected filters, and active tab
   useEffect(() => {
-    let filtered = [...mockPatients];
+    let filtered = [...patients];
     
     // Filter by search query
     if (searchQuery) {
@@ -166,8 +68,8 @@ const PatientRegistration = () => {
       filtered = filtered.filter(
         (patient) =>
           patient.name.toLowerCase().includes(query) ||
-          patient.id.toLowerCase().includes(query) ||
-          patient.phone.toLowerCase().includes(query)
+          patient.patient_id.toLowerCase().includes(query) ||
+          (patient.phone && patient.phone.toLowerCase().includes(query))
       );
     }
     
@@ -180,16 +82,11 @@ const PatientRegistration = () => {
     
     // Filter by active tab
     if (activeTab === 'alerts') {
-      filtered = filtered.filter((patient) => patient.hasAlert);
-    } else if (activeTab === 'recent') {
-      // Assuming recent means visited in the last month (October in our mock data)
-      filtered = filtered.filter((patient) => 
-        patient.lastVisit.includes('Oct')
-      );
+      filtered = filtered.filter((patient) => patient.has_alert);
     }
     
     setFilteredPatients(filtered);
-  }, [searchQuery, selectedGenders, activeTab]);
+  }, [searchQuery, selectedGenders, activeTab, patients]);
 
   const toggleGenderFilter = (gender: string) => {
     if (selectedGenders.includes(gender)) {
@@ -208,6 +105,17 @@ const PatientRegistration = () => {
     setActiveTab(value);
   };
 
+  const handleRegistrationSuccess = () => {
+    setIsDialogOpen(false);
+    fetchPatients();
+  };
+
+  // Calculate statistics
+  const totalPatients = patients.length;
+  const malePatients = patients.filter(p => p.gender === 'Male').length;
+  const femalePatients = patients.filter(p => p.gender === 'Female').length;
+  const alertPatients = patients.filter(p => p.has_alert).length;
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
@@ -216,10 +124,23 @@ const PatientRegistration = () => {
         <div className="container px-4 sm:px-6 lg:px-8 py-8 mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <h1 className="text-3xl font-bold mb-4 sm:mb-0">Patient Management</h1>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Register New Patient
-            </Button>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Register New Patient
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Register New Patient</DialogTitle>
+                  <DialogDescription>
+                    Fill out the form below to register a new patient to the system.
+                  </DialogDescription>
+                </DialogHeader>
+                <PatientRegistrationForm onSuccess={handleRegistrationSuccess} />
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Patient Overview */}
@@ -231,16 +152,16 @@ const PatientRegistration = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Total Patients</p>
-                  <p className="text-2xl font-bold">1,248</p>
+                  <p className="text-2xl font-bold">{totalPatients}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="bg-blue-50 text-blue-700 p-2 rounded-lg text-center">
-                  <p className="font-medium">732</p>
+                  <p className="font-medium">{malePatients}</p>
                   <p>Male</p>
                 </div>
                 <div className="bg-pink-50 text-pink-700 p-2 rounded-lg text-center">
-                  <p className="font-medium">516</p>
+                  <p className="font-medium">{femalePatients}</p>
                   <p>Female</p>
                 </div>
               </div>
@@ -252,13 +173,15 @@ const PatientRegistration = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">New Registrations</p>
-                  <p className="text-2xl font-bold">127</p>
+                  <p className="text-2xl font-bold">
+                    {patients.length > 0 ? patients.length : 0}
+                  </p>
                 </div>
               </div>
               <div className="text-sm text-gray-600">
-                <p>Increase of 12% from last month</p>
+                <p>All patients in the system</p>
                 <div className="h-2 bg-gray-100 rounded-full mt-2">
-                  <div className="h-2 bg-secondary rounded-full" style={{ width: '12%' }}></div>
+                  <div className="h-2 bg-secondary rounded-full" style={{ width: '100%' }}></div>
                 </div>
               </div>
             </div>
@@ -269,11 +192,11 @@ const PatientRegistration = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Assessments</p>
-                  <p className="text-2xl font-bold">856</p>
+                  <p className="text-2xl font-bold">-</p>
                 </div>
               </div>
               <div className="text-sm text-gray-600">
-                <p>Average of 3.2 assessments per return patient</p>
+                <p>Connect assessments to view stats</p>
               </div>
             </div>
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -283,11 +206,14 @@ const PatientRegistration = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Require Follow-up</p>
-                  <p className="text-2xl font-bold">46</p>
+                  <p className="text-2xl font-bold">{alertPatients}</p>
                 </div>
               </div>
               <div className="text-sm mt-2">
-                <Button variant="outline" size="sm" className="w-full text-red-500 border-red-200 hover:bg-red-50">
+                <Button variant="outline" size="sm" className="w-full text-red-500 border-red-200 hover:bg-red-50"
+                  onClick={() => {
+                    setActiveTab('alerts');
+                  }}>
                   View Urgent Cases
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -298,15 +224,14 @@ const PatientRegistration = () => {
           {/* Tabs and Filters */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-8">
             <div className="p-6 border-b border-gray-100">
-              <Tabs defaultValue="all" onValueChange={handleTabChange}>
+              <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange}>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <TabsList>
                     <TabsTrigger value="all">All Patients</TabsTrigger>
-                    <TabsTrigger value="recent">Recent Visits</TabsTrigger>
                     <TabsTrigger value="alerts">
                       Alerts
                       <Badge className="ml-2 bg-red-500 h-5 w-5 p-0 flex items-center justify-center">
-                        {mockPatients.filter((p) => p.hasAlert).length}
+                        {alertPatients}
                       </Badge>
                     </TabsTrigger>
                   </TabsList>
@@ -357,6 +282,13 @@ const PatientRegistration = () => {
                           >
                             Female
                           </Badge>
+                          <Badge
+                            variant={selectedGenders.includes('Other') ? 'default' : 'outline'}
+                            className="cursor-pointer"
+                            onClick={() => toggleGenderFilter('Other')}
+                          >
+                            Other
+                          </Badge>
                         </div>
                       </div>
                       <div className="ml-auto">
@@ -368,7 +300,7 @@ const PatientRegistration = () => {
                   </div>
                 )}
                 
-                {/* Patient List - Fixed: Moved TabsContent inside the Tabs component */}
+                {/* Patient List */}
                 <TabsContent value="all">
                   {isLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
@@ -382,7 +314,19 @@ const PatientRegistration = () => {
                   ) : filteredPatients.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
                       {filteredPatients.map((patient) => (
-                        <PatientCard key={patient.id} patient={patient} />
+                        <PatientCard key={patient.id} patient={{
+                          id: patient.patient_id,
+                          name: patient.name,
+                          age: patient.age,
+                          gender: patient.gender,
+                          phone: patient.phone || '',
+                          lastVisit: 'Not visited yet',
+                          address: patient.address || '',
+                          medicalHistory: patient.medical_history || [],
+                          campVisits: 0,
+                          registrationDate: patient.registration_date || new Date().toLocaleDateString(),
+                          hasAlert: patient.has_alert
+                        }} />
                       ))}
                     </div>
                   ) : (
@@ -399,28 +343,45 @@ const PatientRegistration = () => {
                   )}
                 </TabsContent>
                 
-                <TabsContent value="recent">
-                  <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {filteredPatients
-                        .filter(p => p.lastVisit.includes('Oct'))
-                        .map((patient) => (
-                          <PatientCard key={patient.id} patient={patient} />
-                        ))}
-                    </div>
-                  </div>
-                </TabsContent>
-                
                 <TabsContent value="alerts">
-                  <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {filteredPatients
-                        .filter(p => p.hasAlert)
-                        .map((patient) => (
-                          <PatientCard key={patient.id} patient={patient} />
-                        ))}
+                  {isLoading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                      {[...Array(2)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="bg-gray-100 h-40 rounded-xl animate-pulse"
+                        ></div>
+                      ))}
                     </div>
-                  </div>
+                  ) : filteredPatients.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                      {filteredPatients.map((patient) => (
+                        <PatientCard key={patient.id} patient={{
+                          id: patient.patient_id,
+                          name: patient.name,
+                          age: patient.age,
+                          gender: patient.gender,
+                          phone: patient.phone || '',
+                          lastVisit: 'Not visited yet',
+                          address: patient.address || '',
+                          medicalHistory: patient.medical_history || [],
+                          campVisits: 0,
+                          registrationDate: patient.registration_date || new Date().toLocaleDateString(),
+                          hasAlert: patient.has_alert
+                        }} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-16 bg-white rounded-xl">
+                      <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <AlertCircle className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-medium">No alert patients found</h3>
+                      <p className="text-gray-500 mt-2 mb-6">
+                        There are currently no patients marked as urgent
+                      </p>
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </div>
