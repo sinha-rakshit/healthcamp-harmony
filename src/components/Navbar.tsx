@@ -16,13 +16,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
   const location = useLocation();
@@ -96,7 +99,7 @@ const Navbar = () => {
         description: "You have been logged in successfully.",
       });
       
-      setIsLoginModalOpen(false);
+      setIsAuthModalOpen(false);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -108,7 +111,18 @@ const Navbar = () => {
     }
   };
   
-  const handleSignUp = async () => {
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (password !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match.",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
@@ -122,14 +136,16 @@ const Navbar = () => {
       }
       
       toast({
-        title: "Sign up successful",
+        title: "Registration successful",
         description: "Please check your email for a confirmation link.",
       });
+      
+      setActiveTab("login");
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Sign up failed",
-        description: error.message || "There was a problem with your sign up.",
+        title: "Registration failed",
+        description: error.message || "There was a problem with your registration.",
       });
     } finally {
       setIsLoading(false);
@@ -155,6 +171,11 @@ const Navbar = () => {
         description: error.message || "There was a problem with your logout.",
       });
     }
+  };
+
+  const openAuthModal = (tab: "login" | "register") => {
+    setActiveTab(tab);
+    setIsAuthModalOpen(true);
   };
 
   return (
@@ -215,63 +236,14 @@ const Navbar = () => {
                 Logout
               </Button>
             ) : (
-              <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
-                <DialogTrigger asChild>
-                  <Button className="ml-4" size="sm">
-                    Login
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Login</DialogTitle>
-                    <DialogDescription>
-                      Enter your credentials to access your account
-                    </DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={handleLogin} className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input 
-                        id="email"
-                        type="email" 
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Enter your email"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Password</Label>
-                      <Input 
-                        id="password"
-                        type="password" 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter your password"
-                        required
-                      />
-                    </div>
-                    <DialogFooter className="pt-4 flex flex-col sm:flex-row gap-2">
-                      <Button 
-                        type="button"
-                        variant="outline"
-                        disabled={isLoading}
-                        onClick={handleSignUp}
-                        className="w-full sm:w-auto order-2 sm:order-1"
-                      >
-                        Sign Up
-                      </Button>
-                      <Button 
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full sm:w-auto order-1 sm:order-2"
-                      >
-                        {isLoading ? 'Processing...' : 'Login'}
-                      </Button>
-                    </DialogFooter>
-                  </form>
-                </DialogContent>
-              </Dialog>
+              <div className="flex space-x-2 ml-4">
+                <Button size="sm" variant="outline" onClick={() => openAuthModal("register")}>
+                  Register
+                </Button>
+                <Button size="sm" onClick={() => openAuthModal("login")}>
+                  Login
+                </Button>
+              </div>
             )}
           </div>
 
@@ -342,11 +314,116 @@ const Navbar = () => {
             {user ? (
               <Button className="w-full" onClick={handleLogout}>Logout</Button>
             ) : (
-              <Button className="w-full" onClick={() => setIsLoginModalOpen(true)}>Login</Button>
+              <div className="space-y-2">
+                <Button className="w-full" onClick={() => openAuthModal("login")}>Login</Button>
+                <Button className="w-full" variant="outline" onClick={() => openAuthModal("register")}>Register</Button>
+              </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Auth modal with tabs for login and register */}
+      <Dialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Account Access</DialogTitle>
+            <DialogDescription>
+              Login or create a new account to access the health camp portal
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Tabs defaultValue={activeTab} value={activeTab} onValueChange={(value) => setActiveTab(value as "login" | "register")}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="register">Register</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login">
+              <form onSubmit={handleLogin} className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email">Email</Label>
+                  <Input 
+                    id="login-email"
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">Password</Label>
+                  <Input 
+                    id="login-password"
+                    type="password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    required
+                  />
+                </div>
+                <DialogFooter className="pt-4">
+                  <Button 
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full"
+                  >
+                    {isLoading ? 'Processing...' : 'Login'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </TabsContent>
+            
+            <TabsContent value="register">
+              <form onSubmit={handleSignUp} className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="register-email">Email</Label>
+                  <Input 
+                    id="register-email"
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-password">Password</Label>
+                  <Input 
+                    id="register-password"
+                    type="password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create a password"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Input 
+                    id="confirm-password"
+                    type="password" 
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm your password"
+                    required
+                  />
+                </div>
+                <DialogFooter className="pt-4">
+                  <Button 
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full"
+                  >
+                    {isLoading ? 'Processing...' : 'Create Account'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
     </nav>
   );
 };

@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getPatients } from '@/services/patientService';
 import { getCamps } from '@/services/campService';
 import CampForm from '@/components/CampForm';
+import { PatientRegistrationForm } from '@/components/PatientRegistrationForm';
 import {
   Calendar,
   User,
@@ -31,6 +32,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 
 const Dashboard = () => {
@@ -477,15 +479,7 @@ const Dashboard = () => {
               Fill out the form below to register a new patient.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4 text-center text-gray-500">
-            Patient registration form will be implemented here
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreatePatientOpen(false)}>
-              Cancel
-            </Button>
-            <Button>Register Patient</Button>
-          </DialogFooter>
+          <PatientRegistrationForm onSuccess={() => setIsCreatePatientOpen(false)} />
         </DialogContent>
       </Dialog>
       
