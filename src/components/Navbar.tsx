@@ -1,13 +1,32 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { supabase } from '@/integrations/supabase/client';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const location = useLocation();
+  const { toast } = useToast();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -28,6 +47,27 @@ const Navbar = () => {
     };
   }, []);
 
+  // Check for existing session
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setUser(data.session?.user || null);
+    };
+    
+    checkSession();
+    
+    // Setup auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user || null);
+      }
+    );
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   const isActive = (path: string) => {
     return location.pathname === path;
   };
@@ -36,6 +76,86 @@ const Navbar = () => {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location]);
+  
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Login successful",
+        description: "You have been logged in successfully.",
+      });
+      
+      setIsLoginModalOpen(false);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: error.message || "There was a problem with your login.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleSignUp = async () => {
+    setIsLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Sign up successful",
+        description: "Please check your email for a confirmation link.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Sign up failed",
+        description: error.message || "There was a problem with your sign up.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Logout successful",
+        description: "You have been logged out.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Logout failed",
+        description: error.message || "There was a problem with your logout.",
+      });
+    }
+  };
 
   return (
     <nav
@@ -89,9 +209,70 @@ const Navbar = () => {
             >
               Patients
             </Link>
-            <Button className="ml-4" size="sm">
-              Login
-            </Button>
+            
+            {user ? (
+              <Button className="ml-4" size="sm" onClick={handleLogout}>
+                Logout
+              </Button>
+            ) : (
+              <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
+                <DialogTrigger asChild>
+                  <Button className="ml-4" size="sm">
+                    Login
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Login</DialogTitle>
+                    <DialogDescription>
+                      Enter your credentials to access your account
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleLogin} className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input 
+                        id="email"
+                        type="email" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter your email"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Password</Label>
+                      <Input 
+                        id="password"
+                        type="password" 
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
+                        required
+                      />
+                    </div>
+                    <DialogFooter className="pt-4 flex flex-col sm:flex-row gap-2">
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        disabled={isLoading}
+                        onClick={handleSignUp}
+                        className="w-full sm:w-auto order-2 sm:order-1"
+                      >
+                        Sign Up
+                      </Button>
+                      <Button 
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full sm:w-auto order-1 sm:order-2"
+                      >
+                        {isLoading ? 'Processing...' : 'Login'}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -158,7 +339,11 @@ const Navbar = () => {
             Patients
           </Link>
           <div className="pt-2">
-            <Button className="w-full">Login</Button>
+            {user ? (
+              <Button className="w-full" onClick={handleLogout}>Logout</Button>
+            ) : (
+              <Button className="w-full" onClick={() => setIsLoginModalOpen(true)}>Login</Button>
+            )}
           </div>
         </div>
       </div>

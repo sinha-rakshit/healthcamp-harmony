@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -37,6 +36,8 @@ import {
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateCampOpen, setIsCreateCampOpen] = useState(false);
+  const [isCreatePatientOpen, setIsCreatePatientOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const { data: patients = [] } = useQuery({
     queryKey: ['patients'],
@@ -49,29 +50,44 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    // Simulate data loading
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
 
-    // Scroll to top when component mounts
     window.scrollTo(0, 0);
 
     return () => clearTimeout(timer);
   }, []);
 
-  // Calculate statistics
+  const handleQuickAction = (action: string) => {
+    console.log(`Quick action clicked: ${action}`);
+    switch (action) {
+      case 'newPatient':
+        setIsCreatePatientOpen(true);
+        break;
+      case 'schedulecamp':
+        setIsCreateCampOpen(true);
+        break;
+      case 'assessment':
+        console.log('Assessment action clicked');
+        break;
+      case 'reports':
+        console.log('Reports action clicked');
+        break;
+      default:
+        break;
+    }
+  };
+
   const totalPatients = patients.length;
   const totalCamps = camps.length;
   const activeCamps = camps.filter(camp => camp.status === 'active').length;
   const completedCamps = camps.filter(camp => camp.status === 'completed').length;
 
-  // Get most recent camps
   const recentCamps = [...camps].sort((a, b) => 
     new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
   ).slice(0, 3);
 
-  // Get most recent patients
   const recentPatients = [...patients].sort((a, b) => 
     new Date(b.registration_date || 0).getTime() - new Date(a.registration_date || 0).getTime()
   ).slice(0, 3);
@@ -105,7 +121,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <StatsCard
               title="Total Patients"
@@ -133,11 +148,8 @@ const Dashboard = () => {
             />
           </div>
 
-          {/* Main content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left column */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Recent Camps */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="p-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
@@ -196,7 +208,6 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Health Insights */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="p-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
@@ -309,28 +320,42 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Right column */}
             <div className="space-y-8">
-              {/* Quick Actions */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="p-6 border-b border-gray-100">
                   <h2 className="text-xl font-bold">Quick Actions</h2>
                 </div>
                 <div className="p-6">
                   <div className="grid grid-cols-2 gap-4">
-                    <Button variant="outline" className="h-24 flex flex-col items-center justify-center">
+                    <Button 
+                      variant="outline" 
+                      className="h-24 flex flex-col items-center justify-center"
+                      onClick={() => handleQuickAction('newPatient')}
+                    >
                       <User className="h-6 w-6 mb-2" />
                       <span>New Patient</span>
                     </Button>
-                    <Button variant="outline" className="h-24 flex flex-col items-center justify-center">
+                    <Button 
+                      variant="outline" 
+                      className="h-24 flex flex-col items-center justify-center"
+                      onClick={() => handleQuickAction('schedulecamp')}
+                    >
                       <Calendar className="h-6 w-6 mb-2" />
                       <span>Schedule Camp</span>
                     </Button>
-                    <Button variant="outline" className="h-24 flex flex-col items-center justify-center">
+                    <Button 
+                      variant="outline" 
+                      className="h-24 flex flex-col items-center justify-center"
+                      onClick={() => handleQuickAction('assessment')}
+                    >
                       <FileText className="h-6 w-6 mb-2" />
                       <span>Assessment</span>
                     </Button>
-                    <Button variant="outline" className="h-24 flex flex-col items-center justify-center">
+                    <Button 
+                      variant="outline" 
+                      className="h-24 flex flex-col items-center justify-center"
+                      onClick={() => handleQuickAction('reports')}
+                    >
                       <BarChart3 className="h-6 w-6 mb-2" />
                       <span>Reports</span>
                     </Button>
@@ -338,7 +363,6 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Recent Patients */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="p-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
@@ -390,7 +414,6 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              {/* Upcoming Events */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="p-6 border-b border-gray-100">
                   <h2 className="text-xl font-bold">Upcoming Events</h2>
@@ -445,6 +468,26 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
+      
+      <Dialog open={isCreatePatientOpen} onOpenChange={setIsCreatePatientOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Register New Patient</DialogTitle>
+            <DialogDescription>
+              Fill out the form below to register a new patient.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 text-center text-gray-500">
+            Patient registration form will be implemented here
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreatePatientOpen(false)}>
+              Cancel
+            </Button>
+            <Button>Register Patient</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       <Footer />
     </div>
