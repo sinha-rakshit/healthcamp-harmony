@@ -144,7 +144,7 @@ const CampCard: React.FC<CampCardProps> = ({ camp }) => {
             />
           </Button>
           <div className="flex space-x-2">
-          <Button size="sm" variant="destructive" onClick={() => handleDelete(camp.id)}>
+          <Button size="sm" className="bg-[#00866C] text-white hover:bg-[#00725C]" onClick={() => handleDelete(camp.id)}>
             Delete Camp
           </Button>
           </div>
