@@ -25,7 +25,11 @@ export const getCamps = async (): Promise<Camp[]> => {
     throw error;
   }
 
-  return data || [];
+  // Ensure the status is one of the expected values
+  return (data || []).map(camp => ({
+    ...camp,
+    status: camp.status as Camp['status'] // Cast to our specific enum type
+  }));
 };
 
 export const getCampById = async (id: string): Promise<Camp | null> => {
@@ -40,7 +44,13 @@ export const getCampById = async (id: string): Promise<Camp | null> => {
     return null;
   }
 
-  return data;
+  if (!data) return null;
+  
+  // Ensure the status is one of the expected values
+  return {
+    ...data,
+    status: data.status as Camp['status'] // Cast to our specific enum type
+  };
 };
 
 export const createCamp = async (camp: Camp): Promise<Camp> => {
@@ -55,7 +65,11 @@ export const createCamp = async (camp: Camp): Promise<Camp> => {
     throw error;
   }
 
-  return data;
+  // Ensure the status is one of the expected values
+  return {
+    ...data,
+    status: data.status as Camp['status'] // Cast to our specific enum type
+  };
 };
 
 export const updateCamp = async (id: string, camp: Partial<Camp>): Promise<Camp> => {
@@ -71,7 +85,11 @@ export const updateCamp = async (id: string, camp: Partial<Camp>): Promise<Camp>
     throw error;
   }
 
-  return data;
+  // Ensure the status is one of the expected values
+  return {
+    ...data,
+    status: data.status as Camp['status'] // Cast to our specific enum type
+  };
 };
 
 export const deleteCamp = async (id: string): Promise<void> => {

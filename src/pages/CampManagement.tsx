@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CampCard from '@/components/CampCard';
 import CampForm from '@/components/CampForm';
-import { getCamps } from '@/services/campService';
+import { Camp, getCamps } from '@/services/campService';
 import { Button } from '@/components/ui/button';
 import {
   Plus,
@@ -61,15 +61,15 @@ const CampManagement = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Filter camps based on search query and selected filters
+  // Transform Camp objects to the format expected by CampCard
   useEffect(() => {
     let filtered = [...camps];
     
     // Convert camps to the format expected by the CampCard component
-    filtered = filtered.map(camp => ({
+    const transformedCamps = filtered.map(camp => ({
       id: camp.id || '',
       name: camp.name,
-      type: camp.status,
+      type: camp.status, // Map status to type for CampCard
       date: new Date(camp.start_date).toLocaleDateString('en-US', { 
         month: 'short', day: 'numeric', year: 'numeric' 
       }),
@@ -81,38 +81,39 @@ const CampManagement = () => {
       location: camp.location,
       address: camp.location,
       coordinator: camp.organizer || 'Unknown',
-      status: camp.status as any,
+      status: camp.status,
       specialties: [],
       registeredPatients: 0,
       capacity: camp.capacity
     }));
     
     // Filter by search query
+    let filteredResult = transformedCamps;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
+      filteredResult = filteredResult.filter(
         (camp) =>
           camp.name.toLowerCase().includes(query) ||
           camp.location.toLowerCase().includes(query) ||
-          camp.type.toLowerCase().includes(query)
+          camp.status.toLowerCase().includes(query)
       );
     }
     
     // Filter by selected camp types
     if (selectedTypes.length > 0) {
-      filtered = filtered.filter((camp) =>
-        selectedTypes.some((type) => camp.type.toLowerCase() === type)
+      filteredResult = filteredResult.filter((camp) =>
+        selectedTypes.some((type) => camp.status.toLowerCase() === type)
       );
     }
     
     // Filter by selected statuses
     if (selectedStatuses.length > 0) {
-      filtered = filtered.filter((camp) =>
+      filteredResult = filteredResult.filter((camp) =>
         selectedStatuses.some((status) => camp.status.toLowerCase() === status)
       );
     }
     
-    setFilteredCamps(filtered);
+    setFilteredCamps(filteredResult);
   }, [searchQuery, selectedTypes, selectedStatuses, camps]);
 
   const toggleTypeFilter = (type: string) => {

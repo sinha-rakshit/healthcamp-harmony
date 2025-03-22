@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -73,7 +72,7 @@ export default function CampForm({ initialData, onSuccess, onCancel }: CampFormP
           description: 'The camp has been successfully updated.',
         });
       } else {
-        await createCamp(values);
+        await createCamp(values as Camp);
         toast({
           title: 'Camp created',
           description: 'The camp has been successfully created.',
