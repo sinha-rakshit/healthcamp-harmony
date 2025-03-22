@@ -1,8 +1,10 @@
-
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CampCard from '@/components/CampCard';
+import CampForm from '@/components/CampForm';
+import { getCamps } from '@/services/campService';
 import { Button } from '@/components/ui/button';
 import {
   Plus,
@@ -17,136 +19,18 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-
-// Mock data for camps
-const mockCamps = [
-  {
-    id: 'C001',
-    name: 'Morning Wellness Camp',
-    type: 'Morning',
-    date: 'Oct 15, 2023',
-    time: '8:00 AM - 12:00 PM',
-    location: 'Central Community Center',
-    address: '123 Main St, New York, NY 10001',
-    coordinator: 'Dr. Jane Smith',
-    status: 'Active' as const,
-    specialties: ['General Medicine', 'Cardiology', 'Nutrition'],
-    registeredPatients: 45,
-    capacity: 100,
-  },
-  {
-    id: 'C002',
-    name: 'Tech Corp Health Drive',
-    type: 'Corporate',
-    date: 'Oct 20, 2023',
-    time: '10:00 AM - 4:00 PM',
-    location: 'Tech Corp HQ',
-    address: '456 Business Ave, San Francisco, CA 94107',
-    coordinator: 'Dr. Mark Johnson',
-    status: 'Scheduled' as const,
-    specialties: ['Preventive Care', 'Mental Health', 'Vision'],
-    registeredPatients: 120,
-    capacity: 200,
-  },
-  {
-    id: 'C003',
-    name: 'Riverside Apartments Health Check',
-    type: 'Apartment',
-    date: 'Oct 25, 2023',
-    time: '9:00 AM - 2:00 PM',
-    location: 'Riverside Community Hall',
-    address: '789 River Rd, Chicago, IL 60601',
-    coordinator: 'Dr. Sarah Lee',
-    status: 'Scheduled' as const,
-    specialties: ['Diabetes Screening', 'Blood Pressure', 'General Health'],
-    registeredPatients: 35,
-    capacity: 75,
-  },
-  {
-    id: 'C004',
-    name: 'Lincoln High School Health Day',
-    type: 'School',
-    date: 'Nov 2, 2023',
-    time: '8:30 AM - 3:30 PM',
-    location: 'Lincoln High School Gymnasium',
-    address: '321 Education Blvd, Boston, MA 02101',
-    coordinator: 'Dr. Robert Chen',
-    status: 'Scheduled' as const,
-    specialties: ['Pediatrics', 'Vision', 'Dental', 'Nutrition Education'],
-    registeredPatients: 210,
-    capacity: 350,
-  },
-  {
-    id: 'C005',
-    name: 'Rural Outreach Program',
-    type: 'Rural',
-    date: 'Nov 10, 2023',
-    time: '9:00 AM - 5:00 PM',
-    location: 'Greenfield Community Center',
-    address: '567 Farm Rd, Greenfield, WI 53220',
-    coordinator: 'Dr. Emily Rodriguez',
-    status: 'Scheduled' as const,
-    specialties: ['General Medicine', 'Women\'s Health', 'Pediatrics', 'Geriatrics'],
-    registeredPatients: 68,
-    capacity: 150,
-  },
-  {
-    id: 'C006',
-    name: 'Heart Health Screening',
-    type: 'Specialized',
-    date: 'Nov 15, 2023',
-    time: '10:00 AM - 3:00 PM',
-    location: 'Cardiac Care Center',
-    address: '890 Health Ave, Dallas, TX 75201',
-    coordinator: 'Dr. Michael Wong',
-    status: 'Scheduled' as const,
-    specialties: ['Cardiology', 'Cardiovascular Screening', 'Lifestyle Counseling'],
-    registeredPatients: 55,
-    capacity: 100,
-  },
-  {
-    id: 'C007',
-    name: 'Mobile Vaccine Clinic',
-    type: 'Mobile',
-    date: 'Oct 5, 2023',
-    time: '8:00 AM - 6:00 PM',
-    location: 'Various Locations',
-    address: 'Multiple stops throughout Miami-Dade County',
-    coordinator: 'Dr. Lisa Johnson',
-    status: 'Completed' as const,
-    specialties: ['Vaccinations', 'Immunizations', 'Preventive Care'],
-    registeredPatients: 320,
-    capacity: 400,
-  },
-  {
-    id: 'C008',
-    name: 'Women\'s Health Workshop',
-    type: 'Specialized',
-    date: 'Sep 28, 2023',
-    time: '9:00 AM - 3:00 PM',
-    location: 'Women\'s Health Center',
-    address: '432 Wellness Blvd, Portland, OR 97201',
-    coordinator: 'Dr. Rebecca Martinez',
-    status: 'Completed' as const,
-    specialties: ['Gynecology', 'Breast Health', 'Prenatal Care', 'Nutrition'],
-    registeredPatients: 175,
-    capacity: 200,
-  },
-];
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const campTypes = [
-  { value: 'morning', label: 'Morning' },
-  { value: 'corporate', label: 'Corporate' },
-  { value: 'apartment', label: 'Apartment' },
-  { value: 'school', label: 'School' },
-  { value: 'rural', label: 'Rural' },
-  { value: 'specialized', label: 'Specialized' },
-  { value: 'mobile', label: 'Mobile' },
-];
-
-const statusOptions = [
+  { value: 'upcoming', label: 'Upcoming' },
   { value: 'active', label: 'Active' },
-  { value: 'scheduled', label: 'Scheduled' },
   { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' },
 ];
@@ -154,10 +38,16 @@ const statusOptions = [
 const CampManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredCamps, setFilteredCamps] = useState(mockCamps);
+  const [filteredCamps, setFilteredCamps] = useState<any[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [isCreateCampOpen, setIsCreateCampOpen] = useState(false);
+
+  const { data: camps = [], isLoading: isCampsLoading, refetch } = useQuery({
+    queryKey: ['camps'],
+    queryFn: getCamps,
+  });
 
   useEffect(() => {
     // Simulate data loading
@@ -173,7 +63,29 @@ const CampManagement = () => {
 
   // Filter camps based on search query and selected filters
   useEffect(() => {
-    let filtered = [...mockCamps];
+    let filtered = [...camps];
+    
+    // Convert camps to the format expected by the CampCard component
+    filtered = filtered.map(camp => ({
+      id: camp.id || '',
+      name: camp.name,
+      type: camp.status,
+      date: new Date(camp.start_date).toLocaleDateString('en-US', { 
+        month: 'short', day: 'numeric', year: 'numeric' 
+      }),
+      time: `${new Date(camp.start_date).toLocaleTimeString('en-US', { 
+        hour: 'numeric', minute: 'numeric', hour12: true 
+      })} - ${new Date(camp.end_date).toLocaleTimeString('en-US', { 
+        hour: 'numeric', minute: 'numeric', hour12: true 
+      })}`,
+      location: camp.location,
+      address: camp.location,
+      coordinator: camp.organizer || 'Unknown',
+      status: camp.status as any,
+      specialties: [],
+      registeredPatients: 0,
+      capacity: camp.capacity
+    }));
     
     // Filter by search query
     if (searchQuery) {
@@ -201,7 +113,7 @@ const CampManagement = () => {
     }
     
     setFilteredCamps(filtered);
-  }, [searchQuery, selectedTypes, selectedStatuses]);
+  }, [searchQuery, selectedTypes, selectedStatuses, camps]);
 
   const toggleTypeFilter = (type: string) => {
     if (selectedTypes.includes(type)) {
@@ -225,6 +137,16 @@ const CampManagement = () => {
     setSearchQuery('');
   };
 
+  const handleCampSuccess = () => {
+    setIsCreateCampOpen(false);
+    refetch();
+  };
+
+  // Calculate stats
+  const totalCamps = camps.length;
+  const activeCamps = camps.filter(camp => camp.status === 'active').length;
+  const scheduledCamps = camps.filter(camp => camp.status === 'upcoming').length;
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
@@ -233,10 +155,23 @@ const CampManagement = () => {
         <div className="container px-4 sm:px-6 lg:px-8 py-8 mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <h1 className="text-3xl font-bold mb-4 sm:mb-0">Camp Management</h1>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Create New Camp
-            </Button>
+            <Dialog open={isCreateCampOpen} onOpenChange={setIsCreateCampOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create New Camp
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                  <DialogTitle>Create New Camp</DialogTitle>
+                  <DialogDescription>
+                    Fill out the form below to create a new medical camp.
+                  </DialogDescription>
+                </DialogHeader>
+                <CampForm onSuccess={handleCampSuccess} />
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Camp Overview */}
@@ -248,16 +183,16 @@ const CampManagement = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Total Camps</p>
-                  <p className="text-2xl font-bold">12</p>
+                  <p className="text-2xl font-bold">{totalCamps}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="bg-green-50 text-green-700 p-2 rounded-lg text-center">
-                  <p className="font-medium">3</p>
+                  <p className="font-medium">{activeCamps}</p>
                   <p>Active</p>
                 </div>
                 <div className="bg-blue-50 text-blue-700 p-2 rounded-lg text-center">
-                  <p className="font-medium">5</p>
+                  <p className="font-medium">{scheduledCamps}</p>
                   <p>Scheduled</p>
                 </div>
               </div>
@@ -363,7 +298,7 @@ const CampManagement = () => {
                   <div>
                     <h3 className="text-sm font-medium mb-3">Status</h3>
                     <div className="flex flex-wrap gap-2">
-                      {statusOptions.map((status) => (
+                      {campTypes.map((status) => (
                         <Badge
                           key={status.value}
                           variant={selectedStatuses.includes(status.value) ? 'default' : 'outline'}
@@ -382,7 +317,7 @@ const CampManagement = () => {
 
           {/* Camps Grid */}
           <div className="mb-8">
-            {isLoading ? (
+            {isLoading || isCampsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
                   <div
@@ -416,21 +351,32 @@ const CampManagement = () => {
             <div className="col-span-1 md:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <h3 className="text-lg font-semibold mb-4">Upcoming Camp Timeline</h3>
               <div className="relative pl-8 border-l-2 border-gray-200">
-                {mockCamps
-                  .filter((camp) => camp.status === 'Scheduled' || camp.status === 'Active')
+                {camps
+                  .filter((camp) => camp.status === 'upcoming' || camp.status === 'active')
                   .slice(0, 4)
                   .map((camp, index) => (
                     <div key={camp.id} className="mb-6 relative">
                       <div className="absolute -left-[25px] h-5 w-5 rounded-full bg-white border-2 border-primary"></div>
                       <div className="flex items-start">
                         <div className="mr-3 bg-primary/10 text-primary px-2 py-1 rounded-md text-xs min-w-[60px] text-center">
-                          {camp.date.split(', ')[0]}
+                          {new Date(camp.start_date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
                         </div>
                         <div>
                           <h4 className="font-medium">{camp.name}</h4>
                           <div className="flex items-center text-xs text-gray-500 mt-1">
                             <Clock className="h-3 w-3 mr-1" />
-                            {camp.time}
+                            {`${new Date(camp.start_date).toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: 'numeric',
+                              hour12: true,
+                            })} - ${new Date(camp.end_date).toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: 'numeric',
+                              hour12: true,
+                            })}`}
                           </div>
                           <div className="flex items-center text-xs text-gray-500 mt-1">
                             <MapPin className="h-3 w-3 mr-1" />

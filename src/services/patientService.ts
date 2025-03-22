@@ -33,7 +33,7 @@ export const getPatientById = async (id: string): Promise<Patient | null> => {
     .from("patients")
     .select("*")
     .eq("id", id)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error(`Error fetching patient with id ${id}:`, error);

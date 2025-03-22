@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -7,6 +8,10 @@ import CampCard from '@/components/CampCard';
 import PatientCard from '@/components/PatientCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useQuery } from '@tanstack/react-query';
+import { getPatients } from '@/services/patientService';
+import { getCamps } from '@/services/campService';
+import CampForm from '@/components/CampForm';
 import {
   Calendar,
   User,
@@ -17,97 +22,31 @@ import {
   ChevronRight,
   Search,
   BarChart3,
-  CheckCircle
+  CheckCircle,
+  X
 } from 'lucide-react';
-
-// Mock data for dashboard
-const mockCamps = [
-  {
-    id: 'C001',
-    name: 'Morning Wellness Camp',
-    type: 'Morning',
-    date: 'Oct 15, 2023',
-    time: '8:00 AM - 12:00 PM',
-    location: 'Central Community Center',
-    address: '123 Main St, New York, NY 10001',
-    coordinator: 'Dr. Jane Smith',
-    status: 'Active' as const,
-    specialties: ['General Medicine', 'Cardiology', 'Nutrition'],
-    registeredPatients: 45,
-    capacity: 100,
-  },
-  {
-    id: 'C002',
-    name: 'Tech Corp Health Drive',
-    type: 'Corporate',
-    date: 'Oct 20, 2023',
-    time: '10:00 AM - 4:00 PM',
-    location: 'Tech Corp HQ',
-    address: '456 Business Ave, San Francisco, CA 94107',
-    coordinator: 'Dr. Mark Johnson',
-    status: 'Scheduled' as const,
-    specialties: ['Preventive Care', 'Mental Health', 'Vision'],
-    registeredPatients: 120,
-    capacity: 200,
-  },
-  {
-    id: 'C003',
-    name: 'Riverside Apartments Health Check',
-    type: 'Apartment',
-    date: 'Oct 25, 2023',
-    time: '9:00 AM - 2:00 PM',
-    location: 'Riverside Community Hall',
-    address: '789 River Rd, Chicago, IL 60601',
-    coordinator: 'Dr. Sarah Lee',
-    status: 'Scheduled' as const,
-    specialties: ['Diabetes Screening', 'Blood Pressure', 'General Health'],
-    registeredPatients: 35,
-    capacity: 75,
-  },
-];
-
-const mockPatients = [
-  {
-    id: 'P001',
-    name: 'John Smith',
-    age: 45,
-    gender: 'Male',
-    phone: '+1 (555) 123-4567',
-    lastVisit: 'Oct 10, 2023',
-    address: '123 Oak St, New York, NY 10001',
-    medicalHistory: ['Hypertension', 'Type 2 Diabetes'],
-    campVisits: 3,
-    registrationDate: 'Jan 15, 2023',
-    hasAlert: true,
-  },
-  {
-    id: 'P002',
-    name: 'Emily Johnson',
-    age: 34,
-    gender: 'Female',
-    phone: '+1 (555) 987-6543',
-    lastVisit: 'Oct 12, 2023',
-    address: '456 Maple Ave, San Francisco, CA 94107',
-    medicalHistory: ['Asthma', 'Allergies'],
-    campVisits: 2,
-    registrationDate: 'Feb 20, 2023',
-  },
-  {
-    id: 'P003',
-    name: 'Michael Chen',
-    age: 56,
-    gender: 'Male',
-    phone: '+1 (555) 456-7890',
-    lastVisit: 'Oct 8, 2023',
-    address: '789 Pine Rd, Boston, MA 02108',
-    medicalHistory: ['High Cholesterol', 'Arthritis'],
-    campVisits: 4,
-    registrationDate: 'Dec 5, 2022',
-  },
-];
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreateCampOpen, setIsCreateCampOpen] = useState(false);
+
+  const { data: patients = [] } = useQuery({
+    queryKey: ['patients'],
+    queryFn: getPatients,
+  });
+
+  const { data: camps = [] } = useQuery({
+    queryKey: ['camps'],
+    queryFn: getCamps,
+  });
 
   useEffect(() => {
     // Simulate data loading
@@ -121,11 +60,21 @@ const Dashboard = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Demo data for the charts and stats
-  const totalPatients = 1248;
-  const totalCamps = 12;
-  const activeCamps = 3;
-  const completedCamps = 9;
+  // Calculate statistics
+  const totalPatients = patients.length;
+  const totalCamps = camps.length;
+  const activeCamps = camps.filter(camp => camp.status === 'active').length;
+  const completedCamps = camps.filter(camp => camp.status === 'completed').length;
+
+  // Get most recent camps
+  const recentCamps = [...camps].sort((a, b) => 
+    new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+  ).slice(0, 3);
+
+  // Get most recent patients
+  const recentPatients = [...patients].sort((a, b) => 
+    new Date(b.registration_date || 0).getTime() - new Date(a.registration_date || 0).getTime()
+  ).slice(0, 3);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -136,10 +85,23 @@ const Dashboard = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <h1 className="text-3xl font-bold mb-4 sm:mb-0">Dashboard</h1>
             <div className="flex space-x-3">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                New Camp
-              </Button>
+              <Dialog open={isCreateCampOpen} onOpenChange={setIsCreateCampOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    New Camp
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[600px]">
+                  <DialogHeader>
+                    <DialogTitle>Create New Camp</DialogTitle>
+                    <DialogDescription>
+                      Fill out the form below to create a new medical camp.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <CampForm onSuccess={() => setIsCreateCampOpen(false)} />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
@@ -149,15 +111,13 @@ const Dashboard = () => {
               title="Total Patients"
               value={totalPatients}
               icon={<User className="h-5 w-5 text-primary" />}
-              change={{ value: 12, isPositive: true }}
-              description="Last 30 days"
+              description="Registered patients"
             />
             <StatsCard
               title="Total Camps"
               value={totalCamps}
               icon={<Calendar className="h-5 w-5 text-primary" />}
-              change={{ value: 8, isPositive: true }}
-              description="Last 30 days"
+              description="All time"
             />
             <StatsCard
               title="Active Camps"
@@ -200,11 +160,37 @@ const Dashboard = () => {
                         ></div>
                       ))}
                     </div>
-                  ) : (
+                  ) : recentCamps.length > 0 ? (
                     <div className="space-y-6">
-                      {mockCamps.map((camp) => (
-                        <CampCard key={camp.id} camp={camp} />
+                      {recentCamps.map((camp) => (
+                        <CampCard 
+                          key={camp.id} 
+                          camp={{
+                            id: camp.id || '',
+                            name: camp.name,
+                            type: camp.status,
+                            date: new Date(camp.start_date).toLocaleDateString('en-US', { 
+                              month: 'short', day: 'numeric', year: 'numeric' 
+                            }),
+                            time: `${new Date(camp.start_date).toLocaleTimeString('en-US', { 
+                              hour: 'numeric', minute: 'numeric', hour12: true 
+                            })} - ${new Date(camp.end_date).toLocaleTimeString('en-US', { 
+                              hour: 'numeric', minute: 'numeric', hour12: true 
+                            })}`,
+                            location: camp.location,
+                            address: camp.location,
+                            coordinator: camp.organizer || 'Unknown',
+                            status: camp.status as any,
+                            specialties: [],
+                            registeredPatients: 0,
+                            capacity: camp.capacity
+                          }} 
+                        />
                       ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">No camps found. Create your first camp!</p>
                     </div>
                   )}
                 </div>
@@ -375,11 +361,30 @@ const Dashboard = () => {
                         ></div>
                       ))}
                     </div>
-                  ) : (
+                  ) : recentPatients.length > 0 ? (
                     <div className="space-y-4">
-                      {mockPatients.map((patient) => (
-                        <PatientCard key={patient.id} patient={patient} />
+                      {recentPatients.map((patient) => (
+                        <PatientCard 
+                          key={patient.id} 
+                          patient={{
+                            id: patient.id || '',
+                            name: patient.name,
+                            age: patient.age,
+                            gender: patient.gender,
+                            phone: patient.phone || 'N/A',
+                            lastVisit: 'N/A',
+                            address: patient.address || 'N/A',
+                            medicalHistory: patient.medical_history || [],
+                            campVisits: 0,
+                            registrationDate: patient.registration_date,
+                            hasAlert: patient.has_alert
+                          }} 
+                        />
                       ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">No patients found. Register your first patient!</p>
                     </div>
                   )}
                 </div>
