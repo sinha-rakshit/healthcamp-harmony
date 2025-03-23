@@ -1,8 +1,9 @@
-
-import { User, Calendar, Phone, FileText, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { User, Calendar, Phone, ChevronDown, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { deletePatient } from "@/services/patientService";
+import { useToast } from "@/hooks/use-toast";
 
 interface PatientCardProps {
   patient: {
@@ -18,10 +19,38 @@ interface PatientCardProps {
     registrationDate: string;
     hasAlert?: boolean;
   };
+  onDelete?: (id: string) => void;
 }
 
-const PatientCard: React.FC<PatientCardProps> = ({ patient }) => {
+const PatientCard: React.FC<PatientCardProps> = ({ patient, onDelete }) => {
+  const { toast } = useToast();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Handle delete functionality
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete ${patient.name}'s record?`
+    );
+    if (!confirmDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deletePatient(patient.id);
+      toast({
+        title: `Patient-${patient.id} deleted successfully`,
+      });
+      if (onDelete) {
+        onDelete(patient.id);
+      }
+    } catch (error) {
+      toast({
+        title: `Failed to delete patient. Please try again`,
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl border shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
@@ -96,20 +125,22 @@ const PatientCard: React.FC<PatientCardProps> = ({ patient }) => {
             className="px-0 text-gray-500"
             onClick={() => setIsExpanded(!isExpanded)}
           >
-            {isExpanded ? 'Show less' : 'Show more'}
+            {isExpanded ? "Show less" : "Show more"}
             <ChevronDown
               className={`ml-1 h-4 w-4 transition-transform ${
-                isExpanded ? 'transform rotate-180' : ''
+                isExpanded ? "transform rotate-180" : ""
               }`}
             />
           </Button>
           <div className="flex space-x-2">
-            <Button size="sm" variant="outline">
-              <FileText className="h-4 w-4 mr-1" />
-              Records
-            </Button>
-            <Button size="sm">
-              View Details
+            <Button
+              size="sm"
+              className="bg-[#00866C] text-white hover:bg-[#00725C]"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              {isDeleting ? "Deleting..." : "Delete"}
             </Button>
           </div>
         </div>

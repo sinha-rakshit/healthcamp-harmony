@@ -69,6 +69,7 @@ spO2: z
   .optional(),
   medical_history: z.array(z.string()).optional(),
   has_alert: z.boolean().default(false),
+  remarks: z.string().optional(),
 });
 
 type PatientFormValues = z.infer<typeof patientFormSchema>;
@@ -423,6 +424,7 @@ export function PatientRegistrationForm({ onSuccess }: { onSuccess?: () => void 
       spO2: "",
       medical_history: [],
       has_alert: false,
+      remarks: "",
     },
   });
 
@@ -455,6 +457,10 @@ export function PatientRegistrationForm({ onSuccess }: { onSuccess?: () => void 
         address: data.address,
         medical_history: data.medical_history,
         has_alert: data.has_alert,
+        blood_pressure: data.blood_pressure,
+        diabetes: data.diabetes,
+        spO2: data.spO2,
+        remarks: data.remarks,
       };
 
       await createPatient(patientData);
@@ -479,6 +485,7 @@ export function PatientRegistrationForm({ onSuccess }: { onSuccess?: () => void 
       setIsSubmitting(false);
     }
   }
+  
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -698,7 +705,7 @@ export function PatientRegistrationForm({ onSuccess }: { onSuccess?: () => void 
 
           <FormField
             control={form.control}
-            name="address"
+            name="remarks"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Remarks</FormLabel>

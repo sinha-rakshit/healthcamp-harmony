@@ -1,40 +1,46 @@
-import React from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
+import React from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Camp, createCamp, updateCamp } from '@/services/campService';
+} from "@/components/ui/select";
+import { Camp, createCamp, updateCamp } from "@/services/campService";
 
+// ✅ Updated schema with camp_type
 const campSchema = z.object({
-  name: z.string().min(1, { message: 'Camp name is required' }),
-  location: z.string().min(1, { message: 'Location is required' }),
+  name: z.string().min(1, { message: "Camp name is required" }),
+  location: z.string().min(1, { message: "Location is required" }),
   description: z.string().optional(),
   organizer: z.string().optional(),
   contact: z.string().optional(),
-  start_date: z.string().min(1, { message: 'Start date is required' }),
-  end_date: z.string().min(1, { message: 'End date is required' }),
-  capacity: z.coerce.number().int().positive({ message: 'Capacity must be a positive number' }),
-  status: z.enum(['upcoming', 'active', 'completed', 'cancelled'], {
-    required_error: 'Status is required',
+  start_date: z.string().min(1, { message: "Start date is required" }),
+  end_date: z.string().min(1, { message: "End date is required" }),
+  capacity: z.coerce
+    .number()
+    .int()
+    .positive({ message: "Capacity must be a positive number" }),
+  status: z.enum(["upcoming", "active", "completed", "cancelled"], {
+    required_error: "Status is required",
+  }),
+  camp_type: z.enum(["Morning", "Apartment", "Corporate", "Others"], {
+    required_error: "Camp type is required",
   }),
 });
 
@@ -44,22 +50,27 @@ type CampFormProps = {
   onCancel?: () => void;
 };
 
-export default function CampForm({ initialData, onSuccess, onCancel }: CampFormProps) {
+export default function CampForm({
+  initialData,
+  onSuccess,
+  onCancel,
+}: CampFormProps) {
   const { toast } = useToast();
   const isEditing = !!initialData?.id;
 
   const form = useForm<z.infer<typeof campSchema>>({
     resolver: zodResolver(campSchema),
     defaultValues: initialData || {
-      name: '',
-      location: '',
-      description: '',
-      organizer: '',
-      contact: '',
-      start_date: new Date().toISOString().split('T')[0],
-      end_date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Next day
+      name: "",
+      location: "",
+      description: "",
+      organizer: "",
+      contact: "",
+      start_date: new Date().toISOString().split("T")[0],
+      end_date: new Date(Date.now() + 86400000).toISOString().split("T")[0], // Next day
       capacity: 100,
-      status: 'upcoming' as const,
+      status: "upcoming" as const,
+      camp_type: "Morning", // ✅ Default to "Morning"
     },
   });
 
@@ -68,24 +79,24 @@ export default function CampForm({ initialData, onSuccess, onCancel }: CampFormP
       if (isEditing && initialData?.id) {
         await updateCamp(initialData.id, values);
         toast({
-          title: 'Camp updated',
-          description: 'The camp has been successfully updated.',
+          title: "Camp updated",
+          description: "The camp has been successfully updated.",
         });
       } else {
         await createCamp(values as Camp);
         toast({
-          title: 'Camp created',
-          description: 'The camp has been successfully created.',
+          title: "Camp created",
+          description: "The camp has been successfully created.",
         });
       }
       form.reset();
       if (onSuccess) onSuccess();
     } catch (error) {
-      console.error('Error saving camp:', error);
+      console.error("Error saving camp:", error);
       toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: `Failed to ${isEditing ? 'update' : 'create'} camp. Please try again.`,
+        variant: "destructive",
+        title: "Error",
+        description: `Failed to ${isEditing ? "update" : "create"} camp. Please try again.`,
       });
     }
   };
@@ -208,6 +219,34 @@ export default function CampForm({ initialData, onSuccess, onCancel }: CampFormP
               </FormItem>
             )}
           />
+
+          {/* ✅ New Camp Type Dropdown */}
+          <FormField
+            control={form.control}
+            name="camp_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Camp Type</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select camp type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Morning">Morning</SelectItem>
+                    <SelectItem value="Apartment">Apartment</SelectItem>
+                    <SelectItem value="Corporate">Corporate</SelectItem>
+                    <SelectItem value="Others">Others</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
             name="status"
@@ -240,7 +279,7 @@ export default function CampForm({ initialData, onSuccess, onCancel }: CampFormP
             </Button>
           )}
           <Button type="submit">
-            {isEditing ? 'Update Camp' : 'Create Camp'}
+            {isEditing ? "Update Camp" : "Create Camp"}
           </Button>
         </div>
       </form>

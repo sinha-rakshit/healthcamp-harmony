@@ -170,7 +170,7 @@ const CampManagement = () => {
                     Fill out the form below to create a new medical camp.
                   </DialogDescription>
                 </DialogHeader>
-                <CampForm onSuccess={handleCampSuccess} />
+                <CampForm onSuccess={handleCampSuccess}  />
               </DialogContent>
             </Dialog>
           </div>
@@ -330,7 +330,7 @@ const CampManagement = () => {
             ) : filteredCamps.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCamps.map((camp) => (
-                  <CampCard key={camp.id} camp={camp} />
+                  <CampCard key={camp.id} camp={camp} refreshCamps={getCamps}/>
                 ))}
               </div>
             ) : (

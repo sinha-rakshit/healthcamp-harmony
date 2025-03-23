@@ -12,6 +12,10 @@ export type Patient = {
   medical_history?: string[];
   has_alert?: boolean;
   registration_date?: string;
+  blood_pressure?: string;
+  diabetes?: string;
+  spO2?: string;
+  remarks?: string;
 };
 
 export const getPatients = async (): Promise<Patient[]> => {
@@ -83,7 +87,7 @@ export const deletePatient = async (id: string): Promise<void> => {
   const { error } = await supabase
     .from("patients")
     .delete()
-    .eq("id", id);
+    .eq("patient_id", id);
 
   if (error) {
     console.error(`Error deleting patient with id ${id}:`, error);

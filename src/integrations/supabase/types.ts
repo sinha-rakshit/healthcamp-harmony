@@ -136,6 +136,7 @@ export type Database = {
           start_date: string
           status: string
           updated_at: string
+          camp_type: string
         }
         Insert: {
           capacity?: number
@@ -150,6 +151,7 @@ export type Database = {
           start_date: string
           status?: string
           updated_at?: string
+          camp_type?: string
         }
         Update: {
           capacity?: number
@@ -164,6 +166,7 @@ export type Database = {
           start_date?: string
           status?: string
           updated_at?: string
+          camp_type?: string
         }
         Relationships: []
       }

@@ -4,6 +4,7 @@ import { Calendar, MapPin, Users, Clock, CheckCircle, ChevronDown } from 'lucide
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { deleteCamp } from "@/services/campService";
+import { useToast } from "@/hooks/use-toast";
 
 interface CampCardProps {
   camp: {
@@ -19,10 +20,13 @@ interface CampCardProps {
     specialties: string[];
     registeredPatients: number;
     capacity: number;
+    camp_type: string;
   };
+  refreshCamps?: () => void;
 }
 
-const CampCard: React.FC<CampCardProps> = ({ camp }) => {
+const CampCard: React.FC<CampCardProps> = ({ camp, refreshCamps}) => {
+  const { toast } = useToast();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const statusColors = {
@@ -52,12 +56,19 @@ const CampCard: React.FC<CampCardProps> = ({ camp }) => {
   const handleDelete = async (id: string) => {
     try {
       await deleteCamp(id);
-      alert("Camp deleted successfully!");
-      
+      toast({
+        title: `Camp-${camp.name} deleted successfully`,
+      });
+  
+      // ✅ Trigger re-fetch after deletion
+      if (refreshCamps) {
+        await refreshCamps(); // Auto re-render the list
+      }
     } catch (error) {
       alert("Error deleting camp: " + error.message);
     }
   };
+  
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300">
       <div className="p-5">
@@ -68,9 +79,9 @@ const CampCard: React.FC<CampCardProps> = ({ camp }) => {
               <Badge variant="outline" className="mr-2">
                 {camp.type}
               </Badge>
-              <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[camp.status]}`}>
+              <div className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[camp.camp_type]}`}>
                 <div className="flex items-center">
-                  {getStatusIcon(camp.status)}
+                  {getStatusIcon(camp.camp_type)}
                   {camp.status}
                 </div>
               </div>
