@@ -203,15 +203,6 @@ const Navbar = () => {
 
           {/* Desktop navigation */}
           <div className="hidden md:flex md:items-center md:space-x-8">
-            <Link
-              to="/"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/') ? 'text-primary' : 'text-gray-600'
-              }`}
-            >
-              Home
-            </Link>
-            
             {user && (
               <>
                 <Link
@@ -277,14 +268,7 @@ const Navbar = () => {
         }`}
       >
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white/90 backdrop-blur-md">
-          <Link
-            to="/"
-            className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/') ? 'text-primary bg-primary/10' : 'text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            Home
-          </Link>
+          
 
           {user && (
             <>
