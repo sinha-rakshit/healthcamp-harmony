@@ -47,17 +47,6 @@ const Hero = () => {
               isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
-            <Link to="/dashboard">
-              <Button size="lg" className="group">
-                Get Started
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Button>
-            </Link>
-            <Link to="/camp-management">
-              <Button variant="outline" size="lg">
-                Explore Camps
-              </Button>
-            </Link>
           </div>
         </div>
         

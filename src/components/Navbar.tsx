@@ -17,8 +17,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -155,15 +157,18 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      
+  
       if (error) {
         throw error;
       }
-      
+  
       toast({
         title: "Logout successful",
         description: "You have been logged out.",
       });
+  
+      // Redirect to home after logout
+      navigate('/');
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -206,30 +211,35 @@ const Navbar = () => {
             >
               Home
             </Link>
-            <Link
-              to="/dashboard"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/dashboard') ? 'text-primary' : 'text-gray-600'
-              }`}
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/camp-management"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/camp-management') ? 'text-primary' : 'text-gray-600'
-              }`}
-            >
-              Camps
-            </Link>
-            <Link
-              to="/patient-registration"
-              className={`text-sm font-medium transition-colors hover:text-primary ${
-                isActive('/patient-registration') ? 'text-primary' : 'text-gray-600'
-              }`}
-            >
-              Patients
-            </Link>
+            
+            {user && (
+              <>
+                <Link
+                  to="/dashboard"
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive('/dashboard') ? 'text-primary' : 'text-gray-600'
+                  }`}
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/camp-management"
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive('/camp-management') ? 'text-primary' : 'text-gray-600'
+                  }`}
+                >
+                  Camps
+                </Link>
+                <Link
+                  to="/patient-registration"
+                  className={`text-sm font-medium transition-colors hover:text-primary ${
+                    isActive('/patient-registration') ? 'text-primary' : 'text-gray-600'
+                  }`}
+                >
+                  Patients
+                </Link>
+              </>
+            )}
             
             {user ? (
               <Button className="ml-4" size="sm" onClick={handleLogout}>
@@ -237,9 +247,6 @@ const Navbar = () => {
               </Button>
             ) : (
               <div className="flex space-x-2 ml-4">
-                <Button size="sm" variant="outline" onClick={() => openAuthModal("register")}>
-                  Register
-                </Button>
                 <Button size="sm" onClick={() => openAuthModal("login")}>
                   Login
                 </Button>
@@ -273,50 +280,51 @@ const Navbar = () => {
           <Link
             to="/"
             className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/')
-                ? 'text-primary bg-primary/10'
-                : 'text-gray-700 hover:bg-gray-50'
+              isActive('/') ? 'text-primary bg-primary/10' : 'text-gray-700 hover:bg-gray-50'
             }`}
           >
             Home
           </Link>
-          <Link
-            to="/dashboard"
-            className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/dashboard')
-                ? 'text-primary bg-primary/10'
-                : 'text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/camp-management"
-            className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/camp-management')
-                ? 'text-primary bg-primary/10'
-                : 'text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            Camps
-          </Link>
-          <Link
-            to="/patient-registration"
-            className={`block px-3 py-2 rounded-md text-base font-medium ${
-              isActive('/patient-registration')
-                ? 'text-primary bg-primary/10'
-                : 'text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            Patients
-          </Link>
+
+          {user && (
+            <>
+              <Link
+                to="/dashboard"
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive('/dashboard') ? 'text-primary bg-primary/10' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/camp-management"
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive('/camp-management') ? 'text-primary bg-primary/10' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Camps
+              </Link>
+              <Link
+                to="/patient-registration"
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive('/patient-registration') ? 'text-primary bg-primary/10' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Patients
+              </Link>
+            </>
+          )}
+
           <div className="pt-2">
             {user ? (
-              <Button className="w-full" onClick={handleLogout}>Logout</Button>
+              <Button className="w-full" onClick={handleLogout}>
+                Logout
+              </Button>
             ) : (
               <div className="space-y-2">
-                <Button className="w-full" onClick={() => openAuthModal("login")}>Login</Button>
-                <Button className="w-full" variant="outline" onClick={() => openAuthModal("register")}>Register</Button>
+                <Button className="w-full" onClick={() => openAuthModal("login")}>
+                  Login
+                </Button>
               </div>
             )}
           </div>

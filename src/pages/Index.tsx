@@ -134,12 +134,6 @@ const Index = () => {
                 Join thousands of healthcare providers who are making a difference in their communities with Health Camp Harmony.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Link to="/dashboard">
-                  <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                    Get Started Today
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
                 <Button size="lg" variant="outline" className="bg-white/10 border-white/20 hover:bg-white/20 w-full sm:w-auto">
                   Request a Demo
                 </Button>
