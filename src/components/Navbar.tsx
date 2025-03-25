@@ -196,7 +196,7 @@ const Navbar = () => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
               <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-                Health Camp
+                Healthcare Camp
               </span>
             </Link>
           </div>
@@ -337,23 +337,26 @@ const Navbar = () => {
           <DialogHeader>
             <DialogTitle>Account Access</DialogTitle>
             <DialogDescription>
-              Login or create a new account to access the health camp portal
+              Login to access the healthcare camp portal
             </DialogDescription>
           </DialogHeader>
           
-          <Tabs defaultValue={activeTab} value={activeTab} onValueChange={(value) => setActiveTab(value as "login" | "register")}>
-            <TabsList className="grid w-full grid-cols-2">
+          <Tabs
+            defaultValue={activeTab}
+            value={activeTab}
+            onValueChange={(value) => setActiveTab(value as "login")}
+          >
+            <TabsList className="grid w-full grid-cols-1">
               <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="login-email">Email</Label>
-                  <Input 
+                  <Input
                     id="login-email"
-                    type="email" 
+                    type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email"
@@ -362,9 +365,9 @@ const Navbar = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="login-password">Password</Label>
-                  <Input 
+                  <Input
                     id="login-password"
-                    type="password" 
+                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
@@ -372,59 +375,8 @@ const Navbar = () => {
                   />
                 </div>
                 <DialogFooter className="pt-4">
-                  <Button 
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full"
-                  >
-                    {isLoading ? 'Processing...' : 'Login'}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </TabsContent>
-            
-            <TabsContent value="register">
-              <form onSubmit={handleSignUp} className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="register-email">Email</Label>
-                  <Input 
-                    id="register-email"
-                    type="email" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="register-password">Password</Label>
-                  <Input 
-                    id="register-password"
-                    type="password" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Create a password"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
-                  <Input 
-                    id="confirm-password"
-                    type="password" 
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm your password"
-                    required
-                  />
-                </div>
-                <DialogFooter className="pt-4">
-                  <Button 
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full"
-                  >
-                    {isLoading ? 'Processing...' : 'Create Account'}
+                  <Button type="submit" disabled={isLoading} className="w-full">
+                    {isLoading ? "Processing..." : "Login"}
                   </Button>
                 </DialogFooter>
               </form>

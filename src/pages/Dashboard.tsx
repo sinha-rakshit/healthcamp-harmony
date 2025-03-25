@@ -213,11 +213,7 @@ const Dashboard = () => {
               <div className="bg-white rounded-xl shadow-sm border border-gray-100">
                 <div className="p-6 border-b border-gray-100">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-bold">Health Insights</h2>
-                    <Button variant="ghost" size="sm" className="font-medium text-primary">
-                      Full Report
-                      <ChevronRight className="ml-1 h-4 w-4" />
-                    </Button>
+                    <h2 className="text-xl font-bold">Camp Insights</h2>
                   </div>
                 </div>
                 <div className="p-6">
@@ -225,95 +221,24 @@ const Dashboard = () => {
                     <div className="h-64 bg-gray-100 rounded-lg animate-pulse"></div>
                   ) : (
                     <div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div className="border rounded-lg p-4">
-                          <h3 className="font-medium mb-4 text-sm text-gray-600">
-                            Top Detected Conditions
-                          </h3>
-                          <div className="space-y-3">
-                            <div>
-                              <div className="flex justify-between mb-1 text-sm">
-                                <span>Hypertension</span>
-                                <span className="font-medium">38%</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div className="bg-primary rounded-full h-2" style={{ width: '38%' }}></div>
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex justify-between mb-1 text-sm">
-                                <span>Diabetes</span>
-                                <span className="font-medium">24%</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div className="bg-primary rounded-full h-2" style={{ width: '24%' }}></div>
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex justify-between mb-1 text-sm">
-                                <span>Obesity</span>
-                                <span className="font-medium">19%</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div className="bg-primary rounded-full h-2" style={{ width: '19%' }}></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="border rounded-lg p-4">
-                          <h3 className="font-medium mb-4 text-sm text-gray-600">
-                            Camp Effectiveness
-                          </h3>
-                          <div className="h-32 flex items-center justify-center">
-                            <div className="relative w-32 h-32">
-                              <svg viewBox="0 0 36 36" className="w-full h-full">
-                                <path
-                                  d="M18 2.0845
-                                  a 15.9155 15.9155 0 0 1 0 31.831
-                                  a 15.9155 15.9155 0 0 1 0 -31.831"
-                                  fill="none"
-                                  stroke="#eee"
-                                  strokeWidth="2"
-                                />
-                                <path
-                                  d="M18 2.0845
-                                  a 15.9155 15.9155 0 0 1 0 31.831
-                                  a 15.9155 15.9155 0 0 1 0 -31.831"
-                                  fill="none"
-                                  stroke="hsl(175, 84%, 32%)"
-                                  strokeWidth="2"
-                                  strokeDasharray="85, 100"
-                                />
-                              </svg>
-                              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                <span className="text-3xl font-bold">85%</span>
-                                <span className="text-xs text-gray-500">Success Rate</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
                       <div className="border rounded-lg p-4">
                         <h3 className="font-medium mb-4 text-sm text-gray-600">
                           Camp Distribution
                         </h3>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                          <div className="text-center p-3 bg-primary/5 rounded-lg">
-                            <div className="text-2xl font-bold text-primary">5</div>
-                            <div className="text-xs text-gray-600">Morning</div>
-                          </div>
-                          <div className="text-center p-3 bg-secondary/5 rounded-lg">
-                            <div className="text-2xl font-bold text-secondary">3</div>
-                            <div className="text-xs text-gray-600">Corporate</div>
-                          </div>
-                          <div className="text-center p-3 bg-accent/5 rounded-lg">
-                            <div className="text-2xl font-bold text-accent">2</div>
-                            <div className="text-xs text-gray-600">Apartment</div>
-                          </div>
-                          <div className="text-center p-3 bg-gray-100 rounded-lg">
-                            <div className="text-2xl font-bold text-gray-700">2</div>
-                            <div className="text-xs text-gray-600">Other</div>
-                          </div>
+                          {[
+                            { type: "Morning", count: camps.filter((camp) => camp.camp_type === "Morning").length, color: "primary" },
+                            { type: "Corporate", count: camps.filter((camp) => camp.camp_type === "Corporate").length, color: "secondary" },
+                            { type: "Apartment", count: camps.filter((camp) => camp.camp_type === "Apartment").length, color: "accent" },
+                            { type: "Other", count: camps.filter((camp) => camp.camp_type === "Others").length, color: "gray-700" },
+                          ].map((camp, index) => (
+                            <div key={index} className={`text-center p-3 bg-${camp.color}/5 rounded-lg`}>
+                              <div className={`text-2xl font-bold text-${camp.color}`}>
+                                {camp.count}
+                              </div>
+                              <div className="text-xs text-gray-600">{camp.type}</div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -344,22 +269,6 @@ const Dashboard = () => {
                     >
                       <Calendar className="h-6 w-6 mb-2" />
                       <span>Schedule Camp</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="h-24 flex flex-col items-center justify-center"
-                      onClick={() => handleQuickAction('assessment')}
-                    >
-                      <FileText className="h-6 w-6 mb-2" />
-                      <span>Assessment</span>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="h-24 flex flex-col items-center justify-center"
-                      onClick={() => handleQuickAction('reports')}
-                    >
-                      <BarChart3 className="h-6 w-6 mb-2" />
-                      <span>Reports</span>
                     </Button>
                   </div>
                 </div>
@@ -411,57 +320,6 @@ const Dashboard = () => {
                   ) : (
                     <div className="text-center py-8">
                       <p className="text-gray-500">No patients found. Register your first patient!</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                <div className="p-6 border-b border-gray-100">
-                  <h2 className="text-xl font-bold">Upcoming Events</h2>
-                </div>
-                <div className="p-6">
-                  {isLoading ? (
-                    <div className="space-y-4">
-                      {[...Array(3)].map((_, i) => (
-                        <div
-                          key={i}
-                          className="h-16 bg-gray-100 rounded-lg animate-pulse"
-                        ></div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="flex items-start border-l-4 border-primary pl-4 py-1">
-                        <div className="mr-4 bg-primary/10 text-primary px-3 py-2 rounded-md text-center">
-                          <div className="text-sm font-bold">15</div>
-                          <div className="text-xs">OCT</div>
-                        </div>
-                        <div>
-                          <h3 className="font-medium">Morning Wellness Camp</h3>
-                          <p className="text-sm text-gray-600">8:00 AM - 12:00 PM</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start border-l-4 border-secondary pl-4 py-1">
-                        <div className="mr-4 bg-secondary/10 text-secondary px-3 py-2 rounded-md text-center">
-                          <div className="text-sm font-bold">20</div>
-                          <div className="text-xs">OCT</div>
-                        </div>
-                        <div>
-                          <h3 className="font-medium">Tech Corp Health Drive</h3>
-                          <p className="text-sm text-gray-600">10:00 AM - 4:00 PM</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start border-l-4 border-accent pl-4 py-1">
-                        <div className="mr-4 bg-accent/10 text-accent px-3 py-2 rounded-md text-center">
-                          <div className="text-sm font-bold">25</div>
-                          <div className="text-xs">OCT</div>
-                        </div>
-                        <div>
-                          <h3 className="font-medium">Riverside Apartments Health Check</h3>
-                          <p className="text-sm text-gray-600">9:00 AM - 2:00 PM</p>
-                        </div>
-                      </div>
                     </div>
                   )}
                 </div>

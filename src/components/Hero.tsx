@@ -1,8 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 const Hero = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -27,20 +24,20 @@ const Hero = () => {
               isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
-            Simplifying Healthcare{' '}
+            Mediversal{' '}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-              Camp Management
+              Healthcare Camp
             </span>
           </h1>
           
-          <p
+          {/* <p
             className={`text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-8 transition-all duration-1000 delay-300 ${
               isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
             Streamline your healthcare camps with our comprehensive tracking and management system. 
             Improve patient care, optimize resources, and make data-driven decisions.
-          </p>
+          </p> */}
           
           <div
             className={`flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-1000 delay-500 ${
@@ -60,26 +57,10 @@ const Hero = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-xl blur-xl opacity-50"></div>
             <div className="glass rounded-xl overflow-hidden shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+                src="/images/photo.svg"
                 alt="Healthcare professionals in a medical camp"
                 className="w-full h-auto object-cover"
               />
-              
-              {/* Stats overlay */}
-              <div className="absolute bottom-0 inset-x-0 glass py-4 px-6 flex flex-wrap justify-around gap-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-primary">500+</p>
-                  <p className="text-sm text-gray-600">Camps Organized</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-primary">25,000+</p>
-                  <p className="text-sm text-gray-600">Patients Served</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-primary">98%</p>
-                  <p className="text-sm text-gray-600">Satisfaction Rate</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>

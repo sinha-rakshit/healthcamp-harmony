@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import CampCard from '@/components/CampCard';
 import CampForm from '@/components/CampForm';
 import { Camp, getCamps } from '@/services/campService';
+import { getPatients } from '@/services/patientService';
 import { Button } from '@/components/ui/button';
 import {
   Plus,
@@ -43,6 +44,11 @@ const CampManagement = () => {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [isCreateCampOpen, setIsCreateCampOpen] = useState(false);
+
+  const { data: patients = [] } = useQuery({
+    queryKey: ['patients'],
+    queryFn: getPatients,
+  });
 
   const { data: camps = [], isLoading: isCampsLoading, refetch } = useQuery({
     queryKey: ['camps'],
@@ -143,10 +149,25 @@ const CampManagement = () => {
     refetch();
   };
 
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+
+  // Filter camps held in the current month
+  const currentMonthCamps = camps.filter((camp) => {
+    const campDate = new Date(camp.start_date);
+    return (
+      campDate.getMonth() === currentMonth && campDate.getFullYear() === currentYear
+    );
+  });
+
+
   // Calculate stats
+  const totalPatients = patients.length;
   const totalCamps = camps.length;
   const activeCamps = camps.filter(camp => camp.status === 'active').length;
   const scheduledCamps = camps.filter(camp => camp.status === 'upcoming').length;
+
+  const campsThisMonth = currentMonthCamps.length;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -205,7 +226,7 @@ const CampManagement = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Coverage Area</p>
-                  <p className="text-2xl font-bold">7 Locations</p>
+                  <p className="text-2xl font-bold">-</p>
                 </div>
               </div>
               <div className="text-sm text-gray-600">
@@ -219,7 +240,7 @@ const CampManagement = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Total Participants</p>
-                  <p className="text-2xl font-bold">1,028</p>
+                  <p className="text-2xl font-bold">{totalPatients}</p>
                 </div>
               </div>
               <div className="text-sm text-gray-600">
@@ -233,7 +254,7 @@ const CampManagement = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Scheduled This Month</p>
-                  <p className="text-2xl font-bold">4 Camps</p>
+                  <p className="text-2xl font-bold">{campsThisMonth}</p>
                 </div>
               </div>
               <div className="text-sm mt-2">
