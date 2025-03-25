@@ -102,6 +102,7 @@ const Navbar = () => {
       });
       
       setIsAuthModalOpen(false);
+      navigate('/dashboard'); 
     } catch (error: any) {
       toast({
         variant: "destructive",
