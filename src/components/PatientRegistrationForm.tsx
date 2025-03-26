@@ -50,8 +50,8 @@ const patientFormSchema = z.object({
 
 diabetes: z
   .string()
-  .min(3, {
-    message: "Diabetes info must be at least 3 characters.",
+  .min(2, {
+    message: "Diabetes info must be at least 2 characters.",
   })
   .optional(),
 
@@ -60,10 +60,10 @@ spO2: z
   .refine(
     (val) => {
       const num = parseInt(val.replace("%", ""), 10);
-      return num >= 70 && num <= 100;
+      return num >= 50 && num <= 100;
     },
     {
-      message: "SpO₂ must be a number between 70% and 100%",
+      message: "SpO₂ must be a number between 50 and 100",
     }
   )
   .optional(),
