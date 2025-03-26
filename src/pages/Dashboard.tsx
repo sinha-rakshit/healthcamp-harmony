@@ -182,7 +182,8 @@ const Dashboard = () => {
                           camp={{
                             id: camp.id || '',
                             name: camp.name,
-                            type: camp.status,
+                            type: camp.camp_type,
+                            camp_type: camp.camp_type,
                             date: new Date(camp.start_date).toLocaleDateString('en-US', { 
                               month: 'short', day: 'numeric', year: 'numeric' 
                             }),

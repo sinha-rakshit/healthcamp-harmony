@@ -75,7 +75,7 @@ const CampManagement = () => {
     const transformedCamps = filtered.map(camp => ({
       id: camp.id || '',
       name: camp.name,
-      type: camp.status, // Map status to type for CampCard
+      type: camp.camp_type, // Map status to type for CampCard
       date: new Date(camp.start_date).toLocaleDateString('en-US', { 
         month: 'short', day: 'numeric', year: 'numeric' 
       }),
